@@ -61,3 +61,37 @@ fn test_module<C: Context>(context: C, storage: C::Storage) {
         )
     }
 }
+
+
+#[test]
+fn test_err_on_sender_is_not_admin() {
+    let sender = MockPublicKey::try_from("not_admin").unwrap();
+    let storage = JmtStorage::default();
+
+    // Test Native-Context
+    {
+        let context = MockContext {
+            sender: sender.clone(),
+        };
+
+        test_err_on_sender_is_not_admin_helper(context, storage.clone());
+    }
+
+    // Test Zk-Context
+    {
+        let zk_context = ZkMockContext { sender };
+
+        let zk_storage = ZkStorage::new(storage.get_first_reads());
+        test_err_on_sender_is_not_admin_helper(zk_context, zk_storage);
+    }
+}
+
+
+fn test_err_on_sender_is_not_admin_helper<C: Context>(context: C, storage: C::Storage) {
+    let mut module = ValueAdderModule::<C>::new(storage);
+    module.genesis().unwrap();
+    let resp = module.set_value(11, &context);
+
+    assert!(resp.is_err());
+}
+
