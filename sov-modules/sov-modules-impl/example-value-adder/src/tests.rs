@@ -10,7 +10,7 @@ use sov_state::ZkStorage;
 use sovereign_sdk::stf::Event;
 
 #[test]
-fn test_simple_module() {
+fn test_value_adder() {
     let sender = MockPublicKey::try_from("admin").unwrap();
     let storage = JmtStorage::default();
 
@@ -20,7 +20,7 @@ fn test_simple_module() {
             sender: sender.clone(),
         };
 
-        test_module(context, storage.clone());
+        test_value_adder_helper(context, storage.clone());
     }
 
     // Test Zk-Context
@@ -28,11 +28,11 @@ fn test_simple_module() {
         let zk_context = ZkMockContext { sender };
 
         let zk_storage = ZkStorage::new(storage.get_first_reads());
-        test_module(zk_context, zk_storage);
+        test_value_adder_helper(zk_context, zk_storage);
     }
 }
 
-fn test_module<C: Context>(context: C, storage: C::Storage) {
+fn test_value_adder_helper<C: Context>(context: C, storage: C::Storage) {
     let mut module = ValueAdderModule::<C>::new(storage);
     module.genesis().unwrap();
 
